@@ -3,6 +3,7 @@ package tasks
 import (
 	"context"
 	"encoding/json"
+	"log"
 	"order-service/package/structs"
 
 	"github.com/hibiken/asynq"
@@ -20,7 +21,7 @@ func (rsp ReleaseStockPayload) Dispatch() *asynq.Task {
 	return asynq.NewTask(
 		TypeReleaseStock, 
 		marshal,
-		asynq.Queue("lender:queue:low"),
+		asynq.Queue("order:queue:low"),
 	)
 }
 
@@ -31,7 +32,7 @@ func (a AsyncTask) StartStockReleaseJob(ctx context.Context, task *asynq.Task) e
 	}
 
 	var order structs.Order
-	if err := a.repo.GetOrderByOrderId(ctx, p.OrderID, order); err != nil {
+	if err := a.repo.GetOrderByOrderId(ctx, p.OrderID, &order); err != nil {
 		return err
 	}
 
@@ -48,6 +49,7 @@ func (a AsyncTask) StartStockReleaseJob(ctx context.Context, task *asynq.Task) e
 	if err := a.repo.GetOrderItemsByOrderId(ctx, p.OrderID, &orderItems); err != nil {
 		return err
 	}
+
 	for _, item := range orderItems {
 		req := structs.RequestReleaseStock{
 			OrderID: item.OrderID,
@@ -56,6 +58,7 @@ func (a AsyncTask) StartStockReleaseJob(ctx context.Context, task *asynq.Task) e
 			Quantity: item.Quantity,
 		}
 		if err := a.http_clients.WarehouseClient.ReleaseStock(ctx, req); err != nil{
+			log.Println("Failed to release stock", err)
 			return err
 		}
 	}

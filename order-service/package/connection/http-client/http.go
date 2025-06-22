@@ -60,6 +60,12 @@ func NewHTTPClient(httpClientType int, c *config.Config) HTTPClient {
 	switch httpClientType {
 	case HTTPClientWarehouse:
 		httpClient.baseURL = c.BaseURLWarehouseService + "/"
+		httpClient.headers = []HTTPHeader{
+			{
+				Key:   "Content-Type",
+				Value:  "application/json",
+			},
+		}
 	case HTTPClientTest:
 		httpClient.headers = []HTTPHeader{}
 	default:

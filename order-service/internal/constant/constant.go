@@ -7,7 +7,7 @@ const(
 )
 
 const (
-	QueueHigh   = "lender:queue:high"
-	QueueMedium = "lender:queue:medium"
-	QueueLow    =  "lender:queue:low"
+	QueueHigh   = "order:queue:high"
+	QueueMedium = "order:queue:medium"
+	QueueLow    = "order:queue:low"
 )

@@ -67,9 +67,9 @@ func (w Worker) NrWorkerMiddleware(f WorkerHandler, taskName string) func(ctx co
  }
  
 
-func StartWorker(conf *config.Config, c *config.Cache, repoOrder repository.OrderRepository,
+func StartWorker(conf *config.Config, c *config.Cache, repo repository.OrderRepository,
 	http_clients http_client.HTTPClients, workerClient *asynq.Client, nrp *newrelic.Application) []*cli.Command {
-	task := tasks.NewAsynqTask(conf, repoOrder, http_clients, workerClient)
+	task := tasks.NewAsynqTask(conf, repo, http_clients, workerClient)
 	w := Worker{conf: conf,cacheConf: c, tasks: task, nr: nrp, http_clients: http_clients}
 	return []*cli.Command{
 		{
