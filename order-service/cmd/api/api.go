@@ -9,12 +9,15 @@ import (
 	"order-service/internal/domain/order/delivery"
 	"order-service/internal/domain/order/usecase"
 	"order-service/metrics"
+	"order-service/package/config"
 	"order-service/package/logger"
 	"os"
 	"time"
 
 	"os/signal"
 
+	"github.com/hibiken/asynq"
+	"github.com/hibiken/asynqmon"
 	"github.com/labstack/echo/v4"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	echoSwagger "github.com/swaggo/echo-swagger"
@@ -25,6 +28,7 @@ const CmdServeHTTP = "serve-http"
 
 type HTTP struct{
 	usecase usecase.IOrder
+	cacheConf *config.Cache
 }
 
 func (h HTTP) ServeAPI(c *cli.Context) error  {
@@ -36,6 +40,14 @@ func (h HTTP) ServeAPI(c *cli.Context) error  {
 	
 	e := echo.New();
 
+	mon := asynqmon.New(asynqmon.Options{
+		RootPath: "/monitoring/tasks",
+		RedisConnOpt: asynq.RedisClientOpt{
+			Addr: fmt.Sprintf("%s:%s", h.cacheConf.WorkerRedisHost, h.cacheConf.WorkerRedisPort),
+		},
+	})
+	e.Any("/monitoring/tasks/*", echo.WrapHandler(mon))
+	
 	// Prometheus metrics endpoint
 	e.GET("/metrics", echo.WrapHandler(promhttp.Handler()))
 	e.GET("/ping", func(c echo.Context) error {
@@ -69,8 +81,8 @@ func (h HTTP) ServeAPI(c *cli.Context) error  {
 	return nil	
 }
 
-func ServeAPI(usecase usecase.IOrder) []*cli.Command {
-	h := &HTTP{usecase: usecase}
+func ServeAPI(usecase usecase.IOrder, cacheConf *config.Cache) []*cli.Command {
+	h := &HTTP{usecase: usecase, cacheConf: cacheConf}
 	return []*cli.Command{
 		{
 			Name: CmdServeHTTP,

@@ -39,7 +39,7 @@ func main() {
   repo := repository.NewOrderRepository(dbConn)
   usecase := usecase.NewOrderUsecase(repo, workerClient)
   cmds := []*cli.Command{}
-  cmds = append(cmds, api.ServeAPI(usecase)...)
+  cmds = append(cmds, api.ServeAPI(usecase, cacheConf)...)
   cmds = append(cmds, migrate.NewMigrate(dbConn)...)
   cmds = append(cmds, worker.StartWorker(conf, cacheConf, repo, httpClient, workerClient, nrApp)...)
 
