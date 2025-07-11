@@ -1,40 +1,25 @@
 package rabbitmq
 
 import (
-	"context"
-	"log"
+	"github.com/streadway/amqp"
 )
 
-func Consumer(ctx context.Context)  {
-	ch := Connection()
-	q, err := ch.QueueDeclare(
-        "hello", // name
-        false,   // durable
-        false,   // delete when unused
-        false,   // exclusive
-        false,   // no-wait
-        nil,     // arguments
-    )
-    failOnError(err, "Failed to declare a queue")
-    msgs, err := ch.Consume(
-        q.Name, // queue
-        "",     // consumer
-        true,   // auto-ack
-        false,  // exclusive
-        false,  // no-local
-        false,  // no-wait
-        nil,    // args
-    )
-    failOnError(err, "Failed to register a consumer")
+func (r *RabbitMQClient) Consume(queueName string, handler func(amqp.Delivery)) error {
+	_, err := r.channel.QueueDeclare(queueName, true, false, false, false, nil)
+	if err != nil {
+		return err
+	}
 
-    forever := make(chan bool)
+	msgs, err := r.channel.Consume(queueName, "", true, false, false, false, nil)
+	if err != nil {
+		return err
+	}
 
-    go func() {
-        for d := range msgs {
-            log.Printf("Received a message: %s", d.Body)
-        }
-    }()
+	go func() {
+		for msg := range msgs {
+			handler(msg)
+		}
+	}()
 
-    log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
-    <-forever
+	return nil
 }

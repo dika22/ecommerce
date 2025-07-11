@@ -2,7 +2,6 @@ package worker
 
 import (
 	"warehouse-service/package/config"
-	rabbitmq "warehouse-service/package/rabbit-mq"
 
 	"github.com/urfave/cli/v2"
 )
@@ -13,7 +12,6 @@ type Worker struct{
 }
 
 func WorkerClient() {
-	rabbitmq.Connection()
 }
 
 func (w Worker) StartWorker(*cli.Context) error  {

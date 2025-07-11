@@ -2,24 +2,49 @@ package rabbitmq
 
 import (
 	"log"
+	"time"
+	"warehouse-service/package/config"
 
-	"github.com/rabbitmq/amqp091-go"
+	"github.com/streadway/amqp"
 )
 
-func Connection() *amqp091.Channel {
-	conn, err := amqp091.Dial("amqp://guest:guest@localhost:5672/")
-    failOnError(err, "Failed to connect to RabbitMQ")
-    defer conn.Close()
-
-    ch, err := conn.Channel()
-    failOnError(err, "Failed to open a channel")
-    defer ch.Close()
-
-	return ch
+type RabbitMQClient struct {
+	conn    *amqp.Connection
+	channel *amqp.Channel
+	url     string
 }
 
-func failOnError(err error, msg string) {
-    if err != nil {
-        log.Fatalf("%s: %s", msg, err)
-    }
+func NewRabbitMQClient(cfg *config.Config) (*RabbitMQClient, error) {
+	client := &RabbitMQClient{url: cfg.RabbitMQURL}
+	if err := client.connect(); err != nil {
+		return nil, err
+	}
+	return client, nil
+}
+
+func (r *RabbitMQClient) connect() error {
+	var err error
+	for i := 0; i < 5; i++ {
+		r.conn, err = amqp.Dial(r.url)
+		if err == nil {
+			break
+		}
+		log.Printf("Retrying RabbitMQ connection... (%d/5)", i+1)
+		time.Sleep(2 * time.Second)
+	}
+	if err != nil {
+		return err
+	}
+
+	r.channel, err = r.conn.Channel()
+	return err
+}
+
+func (r *RabbitMQClient) Close() {
+	if r.channel != nil {
+		r.channel.Close()
+	}
+	if r.conn != nil {
+		r.conn.Close()
+	}
 }

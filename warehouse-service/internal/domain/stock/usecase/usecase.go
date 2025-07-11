@@ -12,6 +12,7 @@ type IStock interface{
 	GetAvailableStock(ctx context.Context, productID string) (structs.ResponseTotalStock, error)
 	ReserveStock(ctx context.Context, req *structs.RequestReserveStock) error
 	ReleaseStock(ctx context.Context, req *structs.RequestReleaseStock) error
+	BatchStock(ctx context.Context, req *structs.RequestBatchStock) (structs.ResponseBatchStock, error)
 }
 
 type UsecaseStock struct{

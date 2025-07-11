@@ -72,6 +72,18 @@ func (h StockHTTP) ReleaseStock(c echo.Context) error {
 	return response.JSONSuccess(c, req, "success release stock")
 }
 
+func (h StockHTTP) BatchStock(c echo.Context) error {
+	ctx := c.Request().Context()
+	req := &structs.RequestBatchStock{}
+	if err := c.Bind(req); err != nil {
+		return response.JSONResponse(c, http.StatusBadRequest, "error", err.Error(), nil)
+	}
+	resp, err := h.uc.BatchStock(ctx, req); 
+	if err != nil {
+		return response.JSONResponse(c, http.StatusBadRequest, "error", err.Error(), nil)
+	}
+	return   response.JSONSuccess(c, resp, "success batch stock")
+}
 
 func NewStockHTTP(r *echo.Group, uc usecase.IStock)  {
 	u := StockHTTP{uc: uc}
