@@ -15,7 +15,7 @@ func (h ProductHTTP) GetAll(c echo.Context) error {
 	ctx := c.Request().Context()
 	resp, err := h.uc.GetAll(ctx); 
 	if err != nil {
-		return response.JSONResponse(c, http.StatusBadRequest, "error", err.Error(), nil)
+		return response.JSONResponse(c, http.StatusBadRequest, false, err.Error(), nil)
 	}
 	return response.JSONSuccess(c, resp, "success get all product")
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"product-service/cmd/middleware"
 	"product-service/internal/domain/product/delivery"
 	"product-service/internal/domain/product/usecase"
 	"time"
@@ -31,6 +32,10 @@ func (h HTTP) ServeAPI(c *cli.Context) error  {
 	e.GET("/ping", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, "pong")
 	})
+
+	// Configurable rate limiter
+	rl := middleware.NewRateLimiter(5, 1*time.Second, 0.2) // 5 req / sec with 20% jitter
+	e.Use(middleware.RateLimiterMiddleware(rl))
 
 	productAPI := e.Group("api/v1/products")
 	productAPI.Use(echoMiddleware.Logger())

@@ -18,7 +18,7 @@ func JSONSuccess(c echo.Context, result interface{}, msg string) error {
  }
  
 
- func JSONResponse(c echo.Context, code int, status string, message string, data interface{}) error {
+ func JSONResponse(c echo.Context, code int, status bool, message string, data interface{}) error {
     return c.JSON(code, map[string]interface{}{
         "status":  status,
         "message": message,
