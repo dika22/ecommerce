@@ -13,6 +13,7 @@ type Config struct {
 	RateLimitBucketLeakSecond string `env:"RATE_LIMIT_BUCKET_LEAK_SECOND"`
 	DebugHTTP                 string `env:"DEBUG_HTTP"`
 	BaseURLWarehouseService   string `env:"BASE_URL_WAREHOUSE_SERVICE"`
+	RabbitMQURL               string `env:"RABBITMQ_URL"`
 }
 
 func NewConfig() *Config {

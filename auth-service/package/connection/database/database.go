@@ -10,6 +10,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 
 	"auth-service/package/config"
 )
@@ -28,7 +29,7 @@ func NewDatabase(connType string, c *config.Database) *gorm.DB {
 	db := &gorm.DB{}
 	gormCfg := &gorm.Config{
 		SkipDefaultTransaction: true,
-		// Logger:                 logger.Default.LogMode(logger.Info),
+		Logger:                 logger.Default.LogMode(logger.Info),
 	}
 	var dialector gorm.Dialector
 	var err error

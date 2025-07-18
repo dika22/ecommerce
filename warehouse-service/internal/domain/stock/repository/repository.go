@@ -8,7 +8,7 @@ import (
 )
 
 type Repository interface{
-	Storestock(ctx context.Context) error
+	StoreStock(ctx context.Context) error
 	GetAvailableStockByProductId(ctx context.Context, productID, totalStock int64) error 
 	ReserveStock(ctx context.Context, req *structs.RequestReserveStock) error
 }

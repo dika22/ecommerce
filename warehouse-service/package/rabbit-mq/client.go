@@ -1,6 +1,7 @@
 package rabbitmq
 
 import (
+	"fmt"
 	"log"
 	"time"
 	"warehouse-service/package/config"
@@ -11,11 +12,11 @@ import (
 type RabbitMQClient struct {
 	conn    *amqp.Connection
 	channel *amqp.Channel
-	url     string
+	cfg     *config.Config
 }
 
 func NewRabbitMQClient(cfg *config.Config) (*RabbitMQClient, error) {
-	client := &RabbitMQClient{url: cfg.RabbitMQURL}
+	client := &RabbitMQClient{cfg: cfg}
 	if err := client.connect(); err != nil {
 		return nil, err
 	}
@@ -24,8 +25,9 @@ func NewRabbitMQClient(cfg *config.Config) (*RabbitMQClient, error) {
 
 func (r *RabbitMQClient) connect() error {
 	var err error
+    url := fmt.Sprintf("amqp://%v:%v@%v:%v/", r.cfg.MessageBrokerUsername, r.cfg.MessageBrokerPassword, r.cfg.MessageBrokerURL, r.cfg.MessageBrokerPort)
 	for i := 0; i < 5; i++ {
-		r.conn, err = amqp.Dial(r.url)
+		r.conn, err = amqp.Dial(url)
 		if err == nil {
 			break
 		}

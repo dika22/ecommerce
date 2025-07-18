@@ -2,9 +2,12 @@ package cmd
 
 import (
 	"auth-service/cmd/middleware"
+	sellerDelivery "auth-service/internal/domain/seller/delivery"
+	sellerUsecase "auth-service/internal/domain/seller/usecase"
 	"auth-service/internal/domain/user/delivery"
 	"auth-service/internal/domain/user/usecase"
 	"auth-service/metrics"
+	"auth-service/package/config"
 	"auth-service/package/logger"
 	"context"
 	"fmt"
@@ -16,6 +19,7 @@ import (
 	"os/signal"
 
 	"github.com/labstack/echo/v4"
+	echoMiddleware "github.com/labstack/echo/v4/middleware"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/urfave/cli/v2"
 )
@@ -24,6 +28,8 @@ const CmdServeHTTP = "serve-http"
 
 type HTTP struct {
 	usecase usecase.IUser
+	sellerUsecase sellerUsecase.ISeller
+	cfg *config.Config
 }
 
 func (h HTTP) ServeAPI(c *cli.Context) error {
@@ -34,6 +40,8 @@ func (h HTTP) ServeAPI(c *cli.Context) error {
 	metrics.Register()
 
 	e := echo.New()
+	e.Use(middleware.RatelimitMidleware(h.cfg))
+
 	e.GET("/ping", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, "pong")
 	})
@@ -41,11 +49,21 @@ func (h HTTP) ServeAPI(c *cli.Context) error {
 	// Prometheus metrics endpoint
 	e.GET("/metrics", echo.WrapHandler(promhttp.Handler()))
 
-	userAPI := e.Group("users/api/v1")
+	userAPI := e.Group("api/v1/users")
+
+	e.Use(echoMiddleware.CORSWithConfig(echoMiddleware.CORSConfig{
+		// AllowOrigins:     []string{"http://localhost:3001"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
+		AllowCredentials: true,
+	}))
+	
+
 	userAPI.Use(middleware.LoggerMiddleware)
 	userAPI.Use(middleware.MonitoringMiddleware)
 
 	delivery.NewUserHTTP(userAPI, h.usecase)
+	sellerDelivery.NewSellerHTTP(userAPI, h.sellerUsecase)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
@@ -65,8 +83,8 @@ func (h HTTP) ServeAPI(c *cli.Context) error {
 	return nil
 }
 
-func ServeAPI(usecase usecase.IUser) []*cli.Command {
-	h := &HTTP{usecase: usecase}
+func ServeAPI(usecase usecase.IUser, sellerUsecase sellerUsecase.ISeller, cfg *config.Config) []*cli.Command {
+	h := &HTTP{usecase: usecase, sellerUsecase: sellerUsecase, cfg: cfg}
 	return []*cli.Command{
 		{
 			Name:   CmdServeHTTP,

@@ -30,6 +30,55 @@ func (h HTTPWarehouseClient) ReleaseStock(ctx context.Context, reqBody structs.R
  
 }
 
+func (h HTTPWarehouseClient) ReserveStock(ctx context.Context, reqBody structs.RequestReserveStock) error {
+	// h.c = h.c.WithHeader([]http_client.HTTPHeader{
+	// 	{
+	// 		Key:   "Authorization",
+	// 	},
+	// })
+	dest := map[string]interface{}{}
+	_, err := h.c.
+		PrepareRequestJSON(ctx, reqBody, http.MethodPost, "api/v1/stocks/reserve").
+		Do(&dest)
+	if err != nil {
+		return err
+	}
+	return err
+ 
+}
+
+func (h HTTPWarehouseClient) GetStock(ctx context.Context, reqBody structs.RequestGetStock) error{
+	// h.c = h.c.WithHeader([]http_client.HTTPHeader{
+	// 	{
+	// 		Key:   "Authorization",
+	// 	},
+	// })
+	dest := map[string]interface{}{}
+	_, err := h.c.
+		PrepareRequestJSON(ctx, reqBody, http.MethodPost, "api/v1/stocks/reserve").
+		Do(&dest)
+	if err != nil {
+		return err
+	}
+	return err
+}
+
+func (h HTTPWarehouseClient) BatchStock(ctx context.Context, reqBody structs.RequestCreateOrder, dest interface{}) error{
+	// h.c = h.c.WithHeader([]http_client.HTTPHeader{
+	// 	{
+	// 		Key:   "Authorization",
+	// 	},
+	// })
+	dest = map[string]interface{}{}
+	_, err := h.c.
+		PrepareRequestJSON(ctx, reqBody, http.MethodPost, "api/v1/stocks/reserve").
+		Do(&dest)
+	if err != nil {
+		return err
+	}
+	return err
+}
+
 
 func NewHTTPWarehouse(c *config.Config) HTTPWarehouse {
 	return HTTPWarehouseClient{

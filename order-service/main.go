@@ -6,6 +6,7 @@ import (
 	"order-service/internal/domain/order/usecase"
 	"order-service/package/config"
 	"order-service/package/connection/database"
+	rabbitmq "order-service/package/rabbit-mq"
 	"os"
 
 	api "order-service/cmd/api"
@@ -25,6 +26,11 @@ func main() {
   conn := database.WebDB
   dbConn := database.NewDatabase(conn, dbConf)
 
+  mqClient, err := rabbitmq.NewRabbitMQClient(conf)
+  if err != nil {
+    log.Println("ERROR INIT RABBITMQ", err)
+  }
+
   cacheConf := config.NewCache()
   nrApp, err := newrelic.NewApplication(
 		newrelic.ConfigAppName("order-service"),
@@ -37,9 +43,9 @@ func main() {
   httpClient := http_client.NewHTTPClients(conf)
   workerClient := worker.WorkerClient(cacheConf)
   repo := repository.NewOrderRepository(dbConn)
-  usecase := usecase.NewOrderUsecase(repo, workerClient)
+  usecase := usecase.NewOrderUsecase(repo, httpClient, workerClient, mqClient)
   cmds := []*cli.Command{}
-  cmds = append(cmds, api.ServeAPI(usecase, cacheConf)...)
+  cmds = append(cmds, api.ServeAPI(usecase, httpClient, cacheConf)...)
   cmds = append(cmds, migrate.NewMigrate(dbConn)...)
   cmds = append(cmds, worker.StartWorker(conf, cacheConf, repo, httpClient, workerClient, nrApp)...)
 

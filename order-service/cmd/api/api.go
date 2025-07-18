@@ -16,6 +16,8 @@ import (
 
 	"os/signal"
 
+	http_client "order-service/package/http_client"
+
 	"github.com/hibiken/asynq"
 	"github.com/hibiken/asynqmon"
 	"github.com/labstack/echo/v4"
@@ -28,6 +30,7 @@ const CmdServeHTTP = "serve-http"
 
 type HTTP struct{
 	usecase usecase.IOrder
+	http_clients http_client.HTTPClients
 	cacheConf *config.Cache
 }
 
@@ -81,8 +84,8 @@ func (h HTTP) ServeAPI(c *cli.Context) error  {
 	return nil	
 }
 
-func ServeAPI(usecase usecase.IOrder, cacheConf *config.Cache) []*cli.Command {
-	h := &HTTP{usecase: usecase, cacheConf: cacheConf}
+func ServeAPI(usecase usecase.IOrder, http_clients http_client.HTTPClients, cacheConf *config.Cache) []*cli.Command {
+	h := &HTTP{usecase: usecase, http_clients: http_clients, cacheConf: cacheConf}
 	return []*cli.Command{
 		{
 			Name: CmdServeHTTP,

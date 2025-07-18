@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/labstack/gommon/log"
-	"github.com/segmentio/asm/base64"
 
 	"shop-service/package/config"
 
@@ -61,14 +60,6 @@ func NewHTTPClient(httpClientType int, c *config.Config) HTTPClient {
 		WithDumpHTTP: c.DebugHTTP == "true",
 	}
 	switch httpClientType {
-	case HTTPClientMailgun:
-		httpClient.baseURL = c.MailgunBaseURL + "/"
-		httpClient.headers = []HTTPHeader{
-			{
-				Key:   "Authorization",
-				Value: "Basic " + base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("api:%v", c.MailgunAPIKey))),
-			},
-		}
 	case HTTPClientTest:
 		httpClient.headers = []HTTPHeader{}
 	default:

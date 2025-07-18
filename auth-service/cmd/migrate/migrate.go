@@ -14,6 +14,7 @@ type Migrate struct {
 func (h *Migrate) Migrate(c *cli.Context) error {
 	return h.db.AutoMigrate(
 		&structs.User{},
+		&structs.Seller{},
 	)
 }
 

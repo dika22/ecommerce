@@ -12,6 +12,7 @@ type Repository interface{
 	Create(ctx context.Context, order *structs.Order) error
 	GetOrderByOrderId(ctx context.Context, orderID int64, dest interface{}) error
 	GetOrderItemsByOrderId(ctx context.Context, orderID int64, dest interface{}) error
+	StoreOrderItems(ctx context.Context, orderItems []structs.OrderItem) error
 }
 
 type OrderRepository struct{

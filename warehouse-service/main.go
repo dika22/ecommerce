@@ -1,11 +1,14 @@
 package main
 
 import (
+	"fmt"
+	"log"
 	"os"
 	"warehouse-service/internal/domain/stock/repository"
 	"warehouse-service/internal/domain/stock/usecase"
 	"warehouse-service/package/config"
 	"warehouse-service/package/connection/database"
+	rabbitmq "warehouse-service/package/rabbit-mq"
 
 	repoWh "warehouse-service/internal/domain/warehouse/repository"
 	uw "warehouse-service/internal/domain/warehouse/usecase"
@@ -19,23 +22,23 @@ import (
 func main() {
 
   dbConf := config.NewDatabase()
-  // conf := config.NewConfig()
+  conf := config.NewConfig()
   conn := database.WebDB
   dbConn := database.NewDatabase(conn, dbConf)
 
-  // mqClient, err := rabbitmq.NewRabbitMQClient(conf)
-  // if err != nil {
-  //   log.Println("ERROR INIT RABBITMQ", err)
-  // }
+  mqClient, err := rabbitmq.NewRabbitMQClient(conf)
+  if err != nil {
+    log.Println("ERROR INIT RABBITMQ", err)
+  }
 
-  // fmt.Println("DEBUG", mqClient)
+  fmt.Println("DEBUG", mqClient, err)
 
 
   repo := repository.NewRepositoryStock(dbConn)
-  usecase := usecase.NewUsecaseStock(repo)
+  usecase := usecase.NewUsecaseStock(repo, mqClient)
 
   repoWarehouse := repoWh.NewRepositoryWarehouse(dbConn)
-  usecaseWarehouse := uw.NewUsecaseWarehouse(repoWarehouse)
+  usecaseWarehouse := uw.NewUsecaseWarehouse(repoWarehouse, mqClient)
 
   cmds := []*cli.Command{}
   cmds = append(cmds, api.ServeAPI(usecase, usecaseWarehouse)...)

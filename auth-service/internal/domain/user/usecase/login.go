@@ -4,6 +4,7 @@ import (
 	"auth-service/package/structs"
 	"auth-service/package/utils"
 	"context"
+	"errors"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -14,12 +15,11 @@ func (u UserUsecase) Login(ctx context.Context, req structs.RequestLogin) (struc
 		return structs.ResponseLogin{}, err
 	}
 	if err := bcrypt.CompareHashAndPassword([]byte(dest.Password), []byte(req.Password)); err != nil {
-		return structs.ResponseLogin{}, err
+		return structs.ResponseLogin{}, errors.New("Password not match")
 	}
 
 	token, _ := utils.GenerateJWT(int(dest.ID))
 	return structs.ResponseLogin{
 		Token:   token,
-		Message: "success",
 	}, nil
 }

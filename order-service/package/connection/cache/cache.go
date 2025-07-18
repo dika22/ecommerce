@@ -18,7 +18,7 @@ type Cache interface {
 	Del(ctx context.Context, key []string) error
 	DelWithoutPrefix(ctx context.Context, key []string) error
 	LPush(ctx context.Context, key string, value interface{}) error
-	RPush(ctx context.Context, key string, value interface{}) error
+	RPush(ctx context.Context, key string,  value interface{}) error
 	Remember(ctx context.Context, key string, dest interface{}, expiry time.Duration, fn func() error) error
 	RememberWithLock(ctx context.Context, key string, dest interface{}, expiry time.Duration, fn func() error) error
 	RememberWithLockLocal(ctx context.Context, key string, dest interface{}, expiry time.Duration, fn func() error) error

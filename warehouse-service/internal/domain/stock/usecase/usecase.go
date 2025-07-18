@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"warehouse-service/internal/domain/stock/repository"
+	rabbitmq "warehouse-service/package/rabbit-mq"
 	"warehouse-service/package/structs"
 )
 
@@ -17,11 +18,13 @@ type IStock interface{
 
 type UsecaseStock struct{
 	repo repository.StokRepository
+	mqClient *rabbitmq.RabbitMQClient
 }
 
 
-func NewUsecaseStock(repo repository.StokRepository) IStock  {
+func NewUsecaseStock(repo repository.StokRepository, 	mqClient *rabbitmq.RabbitMQClient) IStock  {
 	return &UsecaseStock{
 		repo: repo,
+		mqClient: mqClient,
 	}
 }
